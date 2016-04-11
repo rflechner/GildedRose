@@ -4,6 +4,29 @@ using System.Reflection;
 
 namespace GildedRose.Console
 {
+    public abstract class BusinessRule
+    {
+        protected BusinessRule(string itemName)
+        {
+            ItemName = itemName;
+        }
+
+        public string ItemName { get; }
+    }
+
+    public class DependingRule<TModel, TProperty, TTarget> : BusinessRule
+    {
+        public DependingRule(string itemName, Expression<Func<TModel, TProperty>> dependency) : base(itemName)
+        {
+            Dependency = dependency;
+        }
+
+        public Expression<Func<TModel, TProperty>> Dependency { get; }
+
+        public Func<TModel, TProperty, TTarget> ComputeWith { get; }
+
+    }
+
     public static class ImmutabilityHelpers
     {
         public class CloneBuilder<T>
