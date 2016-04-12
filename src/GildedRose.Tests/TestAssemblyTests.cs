@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using GildedRose.Console;
+using GildedRose.Console.Dsl;
 using Xunit;
 
 namespace GildedRose.Tests
@@ -147,8 +148,7 @@ namespace GildedRose.Tests
             var engine = new BusinessRulesEngine();
             
             Func<Item, string> id = item => item.Name;
-
-
+            
             CreateRule.For<Item>().All()
                 .DoAllways(item => item.SellIn--)
                 .ExceptedWhen(item => item.Name == Inventory.ItemNames.Sulfuras)
@@ -169,8 +169,7 @@ namespace GildedRose.Tests
                 .IdentitiedBy(id)
                 .Then(item => item.Quality++)
                 .RegisterTo(engine);
-
-
+            
             var state1 = Inventory.InitialState;
             var state2 = Inventory.InitialState;
             engine.ApplyRulesOn<Item>(state2.Items);

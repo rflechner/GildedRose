@@ -41,6 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dsl\BusinessRule.cs" />
+    <Compile Include="Dsl\BusinessRuleForId.cs" />
+    <Compile Include="Dsl\BusinessRulesEngine.cs" />
+    <Compile Include="Dsl\ConditionalRule.cs" />
+    <Compile Include="Dsl\ConditionalRuleBuilder.cs" />
+    <Compile Include="Dsl\CreateRule.cs" />
+    <Compile Include="Dsl\CrossInvariantRule.cs" />
+    <Compile Include="Dsl\CrossInvariantRuleBuilder.cs" />
+    <Compile Include="Dsl\RuleBuilder.cs" />
+    <Compile Include="Dsl\RuleForIdBuider.cs" />
     <Compile Include="ImmutabilityHelpers.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryState.cs" />
