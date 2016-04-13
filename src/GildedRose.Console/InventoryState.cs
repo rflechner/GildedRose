@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using GildedRose.Console.Dsl;
 
 namespace GildedRose.Console
 {
@@ -20,4 +21,5 @@ namespace GildedRose.Console
         public Item BackstageTafkal80Etc => Items.Single(i => i.Name == Inventory.ItemNames.BackstageTafkal80Etc);
 
     }
+    
 }

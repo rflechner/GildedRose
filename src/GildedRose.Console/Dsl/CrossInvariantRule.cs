@@ -8,18 +8,23 @@ namespace GildedRose.Console.Dsl
     {
         private readonly Action<TModel> action;
         private readonly List<Func<TModel, bool>> exceptions;
+        private readonly List<Func<TModel, bool>> when;
 
-        public CrossInvariantRule(Action<TModel> action, List<Func<TModel, bool>> exceptions)
+        public CrossInvariantRule(Action<TModel> action, 
+            List<Func<TModel, bool>> exceptions, 
+            List<Func<TModel, bool>> when)
         {
             this.action = action;
             this.exceptions = exceptions;
+            this.when = when;
         }
 
         public override void Apply(TModel model)
         {
             if (exceptions.Any(exception => exception(model)))
                 return;
-            action(model);
+            if (when.Count == 0 || when.Any(condition => condition(model)))
+                action(model);
         }
     }
 }

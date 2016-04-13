@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using GildedRose.Console.Dsl;
 
 namespace GildedRose.Console
 {
@@ -39,82 +42,107 @@ namespace GildedRose.Console
 
         public static InventoryState UpdateQuality(this InventoryState state)
         {
-            var nextState = new List<Item>();
-            foreach (var i in state.Items)
-            {
-                var item = i.Clone();
-                if (item.Name != ItemNames.AgedBrie && item.Name != ItemNames.BackstageTafkal80Etc)
+            var specifications = new BusinessRulesEngine();
+
+            Func<Item, string> id = item => item.Name;
+
+            var itemsExceptedSulfurasDecreaseSellIn =
+                CreateRule.For<Item>().All()
+                .ExceptedWhen(item => item.Name == ItemNames.Sulfuras)
+                .Then(item => item.SellIn--);
+
+            var normalItemsDecreaseInQuality = 
+                CreateRule.For<Item>().All()
+                .ExceptedWhen(item => new[]
                 {
-                    if (item.Quality > 0)
-                    {
-                        if (item.Name != ItemNames.Sulfuras)
-                        {
-                            item.Quality = item.Quality - 1;
-                        }
-                    }
-                }
-                else
+                    ItemNames.AgedBrie,
+                    ItemNames.Sulfuras,
+                    ItemNames.BackstageTafkal80Etc
+                }.Contains(item.Name))
+                .When(item => item.SellIn >= 0)
+                .Then(item => item.Quality--);
+            
+            var dateHhasPassedQualityDegradesTwiceAsFast = 
+                CreateRule.For<Item>().All()
+                .ExceptedWhen(item => new[]
                 {
-                    if (item.Quality < 50)
-                    {
-                        item.Quality = item.Quality + 1;
+                    ItemNames.AgedBrie,
+                    ItemNames.Sulfuras,
+                    ItemNames.BackstageTafkal80Etc
+                }.Contains(item.Name))
+                .When(item => item.SellIn < 0)
+                .Then(item => item.Quality-=2);
+            
+            var agedBrieIncreaseInQuality =
+                CreateRule.For<Item>()
+                    .HavingIds(ItemNames.AgedBrie)
+                    .IdentitiedBy(id)
+                    .When(item => item.SellIn >= 0)
+                    .Then(item => item.Quality ++);
+            
+            var agedBrieIncreaseInQualityTwiceAsFastAfterSellin = 
+                CreateRule.For<Item>()
+                    .HavingIds(ItemNames.AgedBrie)
+                    .IdentitiedBy(id)
+                    .When(item => item.SellIn < 0)
+                    .Then(item => item.Quality += 2);
 
-                        if (item.Name == ItemNames.BackstageTafkal80Etc)
-                        {
-                            if (item.SellIn < 11)
-                            {
-                                if (item.Quality < 50)
-                                {
-                                    item.Quality = item.Quality + 1;
-                                }
-                            }
+            var backstageIncreaseInQuality =
+                CreateRule.For<Item>()
+                    .HavingIds(ItemNames.BackstageTafkal80Etc)
+                    .IdentitiedBy(id)
+                    .When(item => item.SellIn > 6)
+                    .Then(item => item.Quality += 1);
 
-                            if (item.SellIn < 6)
-                            {
-                                if (item.Quality < 50)
-                                {
-                                    item.Quality = item.Quality + 1;
-                                }
-                            }
-                        }
-                    }
-                }
+            var backstageIncreaseby2WhenThereAre10daysOrLess =
+                CreateRule.For<Item>()
+                    .HavingIds(ItemNames.BackstageTafkal80Etc)
+                    .IdentitiedBy(id)
+                    .When(item => item.SellIn.IsBetween(0, 6))
+                    .Then(item => item.Quality += 2);
 
-                if (item.Name != ItemNames.Sulfuras)
-                {
-                    item.SellIn = item.SellIn - 1;
-                }
+            var backstageIncreaseby3WhenThereAre5daysOrLess =
+                CreateRule.For<Item>()
+                    .HavingIds(ItemNames.BackstageTafkal80Etc)
+                    .IdentitiedBy(id)
+                    .When(item => item.SellIn < 6)
+                    .Then(item => item.Quality += 3);
 
-                if (item.SellIn < 0)
-                {
-                    if (item.Name != ItemNames.AgedBrie)
-                    {
-                        if (item.Name != ItemNames.BackstageTafkal80Etc)
-                        {
-                            if (item.Quality > 0)
-                            {
-                                if (item.Name != ItemNames.Sulfuras)
-                                {
-                                    item.Quality = item.Quality - 1;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            item.Quality = item.Quality - item.Quality;
-                        }
-                    }
-                    else
-                    {
-                        if (item.Quality < 50)
-                        {
-                            item.Quality = item.Quality + 1;
-                        }
-                    }
-                }
-                nextState.Add(item);
-            }
+            var backstageDropsTo0AfterTheConcert = 
+                CreateRule.For<Item>()
+                .HavingIds(ItemNames.BackstageTafkal80Etc)
+                .IdentitiedBy(id)
+                .When(item => item.SellIn < 0)
+                .Then(item => item.Quality = 0);
 
+            var qualityMaxValueIs50 = 
+                CreateRule.For<Item>().All()
+                    .ExceptedWhen(item => item.Name == ItemNames.Sulfuras)
+                    .When(item => item.Quality > 50)
+                    .Then(item => item.Quality = 50);
+
+            var qualityMinValueIs0 =
+                CreateRule.For<Item>().All()
+                    .ExceptedWhen(item => item.Name == ItemNames.Sulfuras)
+                    .When(item => item.Quality < 0)
+                    .Then(item => item.Quality = 0);
+
+            var nextState = state.Items.Select(i => i.Clone()).ToList();
+
+            itemsExceptedSulfurasDecreaseSellIn.RegisterTo(specifications);
+            normalItemsDecreaseInQuality.RegisterTo(specifications);
+            dateHhasPassedQualityDegradesTwiceAsFast.RegisterTo(specifications);
+            agedBrieIncreaseInQuality.RegisterTo(specifications);
+            agedBrieIncreaseInQualityTwiceAsFastAfterSellin.RegisterTo(specifications);
+            backstageIncreaseInQuality.RegisterTo(specifications);
+            backstageIncreaseby2WhenThereAre10daysOrLess.RegisterTo(specifications);
+            backstageIncreaseby3WhenThereAre5daysOrLess.RegisterTo(specifications);
+            backstageDropsTo0AfterTheConcert.RegisterTo(specifications);
+            qualityMaxValueIs50.RegisterTo(specifications);
+            qualityMinValueIs0.RegisterTo(specifications);
+
+            specifications.ApplyRulesOn<Item>(nextState);
+            
             return new InventoryState(nextState);
         }
     }

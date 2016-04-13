@@ -49,6 +49,7 @@
     <Compile Include="Dsl\CreateRule.cs" />
     <Compile Include="Dsl\CrossInvariantRule.cs" />
     <Compile Include="Dsl\CrossInvariantRuleBuilder.cs" />
+    <Compile Include="Dsl\Extensions.cs" />
     <Compile Include="Dsl\RuleBuilder.cs" />
     <Compile Include="Dsl\RuleForIdBuider.cs" />
     <Compile Include="ImmutabilityHelpers.cs" />

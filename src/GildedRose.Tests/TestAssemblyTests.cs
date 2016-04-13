@@ -3,6 +3,7 @@ using System.Linq;
 using GildedRose.Console;
 using GildedRose.Console.Dsl;
 using Xunit;
+using Xunit.Sdk;
 
 namespace GildedRose.Tests
 {
@@ -49,6 +50,7 @@ namespace GildedRose.Tests
         public void When_updating_Five_time()
         {
             var state1 = Inventory.InitialState;
+            //var state1 = new InventoryState(Inventory.InitialState.Items.Where(item => item.Name == Inventory.ItemNames.ConjuredManaCake).ToList());
             var state2 = state1
                 .UpdateQuality()
                 .UpdateQuality()
@@ -150,12 +152,12 @@ namespace GildedRose.Tests
             Func<Item, string> id = item => item.Name;
             
             CreateRule.For<Item>().All()
-                .DoAllways(item => item.SellIn--)
+                .Then(item => item.SellIn--)
                 .ExceptedWhen(item => item.Name == Inventory.ItemNames.Sulfuras)
                 .RegisterTo(engine);
 
             CreateRule.For<Item>().All()
-                .DoAllways(item => item.Quality--)
+                .Then(item => item.Quality--)
                 .ExceptedWhen(item => new []
                 {
                     Inventory.ItemNames.AgedBrie,
