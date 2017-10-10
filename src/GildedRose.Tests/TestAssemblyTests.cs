@@ -46,6 +46,20 @@ namespace GildedRose.Tests
             Assert.Equal(Math.Max(0, quality -1), item.Quality.Value);
         }
 
+        [Theory]
+        [InlineData(-1, 5)]
+        [InlineData(-1, 0)]
+        [InlineData(-15, 5)]
+        [InlineData(-11, 1)]
+        [InlineData(-11, 0)]
+        [InlineData(-20, 40)]
+        public void WhenSellInPast_ThenDecreaseBy2(int sellIn, int quality)
+        {
+            var item = Update(new Item("Elixir of the Mongoose", sellIn, quality));
+
+            Assert.Equal(Math.Max(0, quality - 2), item.Quality.Value);
+        }
+
         [Fact]
         public void WhenTimePassed_ThenSulfurasQualityDoesNotDecrease()
         {
