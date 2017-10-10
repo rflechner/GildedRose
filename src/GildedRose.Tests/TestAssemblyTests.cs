@@ -110,7 +110,7 @@ namespace GildedRose.Tests
         [InlineData(0)]
         [InlineData(-1)]
         [InlineData(-15)]
-        public void WhenConvertIsPassed_ThenBackstagePassQualityIs0(int sellIn)
+        public void WhenConcertIsPassed_ThenBackstagePassQualityIs0(int sellIn)
         {
             var item = Update(new BackstagePass(sellIn, 10));
 
